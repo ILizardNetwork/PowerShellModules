@@ -8,3 +8,13 @@ function Import-LNJsonConfig {
     return ($json | ConvertFrom-Json)
   }
 }
+
+# Gets either the parameter value or the default value.
+# Prefers the ParameterValue. If it's empty, it will use the DefaultValue
+function Get-LNDefaultOrParameterValue($DefaultValue, $ParameterValue) {
+  if ($ParameterValue) {
+    return $ParameterValue
+  }
+
+  return $DefaultValue
+}

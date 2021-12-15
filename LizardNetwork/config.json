@@ -5,6 +5,13 @@
     "_DefaultTemplatePath": "The path of the json file which should be used for the conversion",
     "DefaultTemplatePath": "Path of the json file",
     "_DefaultTemplateBlockToReplace": "The block which should be replaced from the template. Equivalent to -BlockNameToReplace flag",
-    "DefaultTemplateBlockToReplace": "oak_log"
+    "DefaultTemplateBlockToReplace": "oak_log",
+    "_CheckForBlockFaces": "Check for the block faces (top, bottom, front, side) each run. This will check if the given -NewBlockName block has a directional equivalent and replaces it.",
+    "CheckForBlockFaces": [
+      "top",
+      "bottom",
+      "front",
+      "side"
+    ]
   }
 }

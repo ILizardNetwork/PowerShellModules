@@ -1,9 +1,3 @@
-# Will be used to check for existing blocks with different faces (top and bottom)
-$script:configNode = "Convert-LNTextures"
-$script:config = Import-LNJsonConfig
-$defaultTemplatePath = $script:config.$script:configNode.DefaultTemplatePath
-$defaultTemplateBlockToReplace = $script:config.$script:configNode.DefaultTemplateBlockToReplace
-
 # Get the json object from the given file path
 function Get-JsonObject([string]$Path) {
   $jsonString = Get-Content $Path -Raw
@@ -11,17 +5,20 @@ function Get-JsonObject([string]$Path) {
 }
 
 # Return textures with block faces (top and bottom) if they exist
-function Invoke-BlockCheck($Texture, $BlockFace) {
-  if (!$script:config.$script:configNode.TexturesSourcePath -or !(Test-Path $script:config.$script:configNode.TexturesSourcePath)) {
-    return $Texture
-  }
-
+function Invoke-BlockFaceCheck($Texture) {
   $sourcePathContents = (Get-ChildItem -Path $script:config.$script:configNode.TexturesSourcePath).BaseName
-  $textureWithFace = $Texture + "_" + $BlockFace
+  
+  foreach($blockFace in $script:config.$script:configNode.BlockFacesToCheck) {
+    if (!$script:config.$script:configNode.TexturesSourcePath -or !(Test-Path $script:config.$script:configNode.TexturesSourcePath)) {
+      return $Texture
+    }
 
-  if ($sourcePathContents.Contains($textureWithFace)) {
-    "INF:`tFound $textureWithFace... Using texture!" | Out-Host
-    return $textureWithFace
+    $textureWithFace = $Texture + "_" + $blockFace
+  
+    if ($sourcePathContents.Contains($textureWithFace)) {
+      "INF:`tFound $textureWithFace... Using texture!" | Out-Host
+      return $textureWithFace
+    }
   }
 
   return $Texture
@@ -32,8 +29,20 @@ function Get-PSObjectKeys($Object) {
   return ($Object | Get-Member -MemberType NoteProperty).Name
 }
 
+# Replaces the texture paths of the model json file with the passed one
+function Convert-LNTextures([string]$JsonPath, [string]$BlockNameToReplace,  [string]$NewBlockName) {
+  $script:configNode = "Convert-LNTextures"
+  $script:config = Import-LNJsonConfig
+  $defaultTemplatePath = $script:config.$script:configNode.DefaultTemplatePath
+  $defaultTemplateBlockToReplace = $script:config.$script:configNode.DefaultTemplateBlockToReplace
+  $JsonPath = Get-LNDefaultOrParameterValue -DefaultValue $defaultTemplatePath -ParameterValue $JsonPath
+  $BlockNameToReplace = Get-LNDefaultOrParameterValue -DefaultValue $defaultTemplateBlockToReplace -ParameterValue $BlockNameToReplace
+
+  Start-Logic -JsonPath $JsonPath -BlockNameToReplace $BlockNameToReplace -NewBlockName $NewBlockName
+}
+
 # Convert textures and save it into json format
-function Convert-LNTextures([string]$JsonPath = $defaultTemplatePath, [string]$BlockNameToReplace = $defaultTemplateBlockToReplace, [string]$NewBlockName) {
+function Start-Logic([string]$JsonPath, [string]$BlockNameToReplace, [string]$NewBlockName) {
   if (!$JsonPath -or !(Test-Path $JsonPath)) {
     "ERR:`tPassed JsonPath `"$JsonPath`" cannot be found!" | Out-Host
     return
@@ -59,12 +68,8 @@ function Convert-LNTextures([string]$JsonPath = $defaultTemplatePath, [string]$B
       $texturePath = $textureDirecory + $NewBlockName
     }
 
-    if ($textureName.EndsWith("_top")) {
-      $texturePath = $textureDirecory + (Invoke-BlockCheck -Texture $NewBlockName -BlockFace "top")
-    }
-
-    if ($textureName.EndsWith("_bottom")) {
-      $texturePath = $textureDirecory + (Invoke-BlockCheck -Texture $NewBlockName -BlockFace "bottom")
+    if ($script:config.$script:configNode.BlockFacesToCheck) {
+      $texturePath = $textureDirecory + (Invoke-BlockFaceCheck -Texture $NewBlockName)
     }
 
     $jsonObject.textures.$textureKey = $texturePath
@@ -75,4 +80,5 @@ function Convert-LNTextures([string]$JsonPath = $defaultTemplatePath, [string]$B
   "INF:`tFile has been saved at `"$newFilePath`""
 }
 
-Export-ModuleMember -Function Convert-LNTextures -Alias "clnt"
+Set-Alias -Name clnt -Value Convert-LNTextures
+Export-ModuleMember -Function Convert-LNTextures -Alias clnt
