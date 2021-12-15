@@ -31,7 +31,7 @@ function Get-PSObjectKeys($Object) {
 }
 
 # Convert textures and save it into json format
-function Convert-LNTextures([string]$JsonPath, [string]$ImageName, [string]$ReplaceImageName) {
+function Convert-LNTextures([string]$JsonPath = $script:config.$script:configNode.DefaultTemplatePath, [string]$ImageName, [string]$ReplaceImageName) {
   if (!$JsonPath -or !(Test-Path $JsonPath)) {
     "ERR:`tPassed JsonPath `"$JsonPath`" cannot be found!" | Out-Host
     return
@@ -70,7 +70,7 @@ function Convert-LNTextures([string]$JsonPath, [string]$ImageName, [string]$Repl
 
   $newFilePath = $jsonDirectoryPath + $jsonItem.BaseName + "_" + $ReplaceImageName + $jsonItem.Extension
   $jsonObject | ConvertTo-Json -Compress | Out-File -FilePath $newFilePath -Encoding utf8
-  "File has been saved at `"$newFilePath`""
+  "INF:`tFile has been saved at `"$newFilePath`""
 }
 
 Export-ModuleMember -Function Convert-LNTextures -Alias "clnt"

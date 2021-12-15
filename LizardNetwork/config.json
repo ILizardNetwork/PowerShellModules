@@ -1,6 +1,8 @@
 {
   "Convert-LNTextures": {
     "_TexturesSourcePath": "This is the path of your local vanilla minecraft resource pack copy which contains all blocks",
-    "TexturesSourcePath": "Path of the vanilla texture block files (../textures/blocks)"
+    "TexturesSourcePath": "Path of the vanilla texture block files (../textures/blocks)",
+    "_DefaultTemplatePath": "The path of the json file which should be used for the conversion",
+    "DefaultTemplatePath": "Path of the json file"
   }
 }
