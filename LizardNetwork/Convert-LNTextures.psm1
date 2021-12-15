@@ -1,5 +1,6 @@
 # Will be used to check for existing blocks with different faces (top and bottom)
-$texturesSourcePath = "Path of the vanilla \textures\block files"
+$script:configNode = "Convert-LNTextures"
+$script:config = Import-LNJsonConfig
 
 # Get the json object from the given file path
 function Get-JsonObject([string]$Path) {
@@ -9,11 +10,11 @@ function Get-JsonObject([string]$Path) {
 
 # Return textures with block faces (top and bottom) if they exist
 function Invoke-BlockCheck($Texture, $BlockFace) {
-  if (!$texturesSourcePath -or !(Test-Path $texturesSourcePath)) {
+  if (!$script:config.$script:configNode.TexturesSourcePath -or !(Test-Path $script:config.$script:configNode.TexturesSourcePath)) {
     return $Texture
   }
 
-  $sourcePathContents = (Get-ChildItem -Path $texturesSourcePath).BaseName
+  $sourcePathContents = (Get-ChildItem -Path $script:config.$script:configNode.TexturesSourcePath).BaseName
   $textureWithFace = $Texture + "_" + $BlockFace
 
   if ($sourcePathContents.Contains($textureWithFace)) {

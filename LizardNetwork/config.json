@@ -1,0 +1,6 @@
+{
+  "Convert-LNTextures": {
+    "_TexturesSourcePath": "This is the path of your local vanilla minecraft resource pack copy which contains all blocks",
+    "TexturesSourcePath": "Path of the vanilla texture block files (../textures/blocks)"
+  }
+}
