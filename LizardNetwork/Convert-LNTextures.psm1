@@ -16,7 +16,7 @@ function Invoke-BlockFaceCheck($Texture) {
     $textureWithFace = $Texture + "_" + $blockFace
   
     if ($sourcePathContents.Contains($textureWithFace)) {
-      "INF:`tFound $textureWithFace... Using texture!" | Out-Host
+      Write-LNInfo -Text "Found $textureWithFace... Using texture!" -Format $script:config.General.Console.DateTimeFormat
       return $textureWithFace
     }
   }
@@ -29,27 +29,21 @@ function Get-PSObjectKeys($Object) {
   return ($Object | Get-Member -MemberType NoteProperty).Name
 }
 
-# Replaces the texture paths of the model json file with the passed one
-function Convert-LNTextures([string]$JsonPath, [string]$BlockNameToReplace,  [string]$NewBlockName) {
-  $script:configNode = "Convert-LNTextures"
-  $script:config = Import-LNJsonConfig
-  $defaultTemplatePath = $script:config.$script:configNode.DefaultTemplatePath
-  $defaultTemplateBlockToReplace = $script:config.$script:configNode.DefaultTemplateBlockToReplace
-  $JsonPath = Get-LNDefaultOrParameterValue -DefaultValue $defaultTemplatePath -ParameterValue $JsonPath
-  $BlockNameToReplace = Get-LNDefaultOrParameterValue -DefaultValue $defaultTemplateBlockToReplace -ParameterValue $BlockNameToReplace
-
-  Start-Logic -JsonPath $JsonPath -BlockNameToReplace $BlockNameToReplace -NewBlockName $NewBlockName
+function New-Subdirectory([string]$Path) {
+  if (!(Test-Path -Path $Path)) {
+    New-Item -Path $Path -ItemType Directory | Out-Null
+  }
 }
 
 # Convert textures and save it into json format
 function Start-Logic([string]$JsonPath, [string]$BlockNameToReplace, [string]$NewBlockName) {
   if (!$JsonPath -or !(Test-Path $JsonPath)) {
-    "ERR:`tPassed JsonPath `"$JsonPath`" cannot be found!" | Out-Host
+    Write-LNError -Text "Passed JsonPath `"$JsonPath`" cannot be found!" -Format $script:config.General.Console.DateTimeFormat
     return
   }
 
   if (!$BlockNameToReplace -or !$NewBlockName ) {
-    "ERR:`tBoth flags, `"BlockNameToReplace`" and `"NewBlockName`" need to be set!" | Out-Host
+    Write-LNError -Text "Both flags, `"BlockNameToReplace`" and `"NewBlockName`" need to be set!" -Format $script:config.General.Console.DateTimeFormat
     return
   }
 
@@ -75,9 +69,29 @@ function Start-Logic([string]$JsonPath, [string]$BlockNameToReplace, [string]$Ne
     $jsonObject.textures.$textureKey = $texturePath
   }
 
-  $newFilePath = $jsonDirectoryPath + $jsonItem.BaseName + "_" + $NewBlockName + $jsonItem.Extension
-  $jsonObject | ConvertTo-Json -Compress | Out-File -FilePath $newFilePath -Encoding utf8
-  "INF:`tFile has been saved at `"$newFilePath`""
+  $newPath = $jsonDirectoryPath
+
+  if ($script:config.$script:configNode.CreateSubfolder) {
+    $newPath += (Get-LNDefaultOrParameterValue -ParameterValue $script:config.$script:configNode.SubfolderPrefix -DefaultValue "converted_") `
+      + $jsonItem.BaseName + [System.IO.Path]::DirectorySeparatorChar
+    New-Subdirectory -Path $newPath
+  }
+
+  $newPath += $jsonItem.BaseName + "_" + $NewBlockName + $jsonItem.Extension
+  $jsonObject | ConvertTo-Json -Compress | Out-File -FilePath $newPath -Encoding utf8
+  Write-LNInfo -Text "File has been saved at `"$newPath`"" -Format $script:config.General.Console.DateTimeFormat
+}
+
+# Replaces the texture paths of the model json file with the passed one
+function Convert-LNTextures([string]$JsonPath, [string]$BlockNameToReplace,  [string]$NewBlockName) {
+  $script:configNode = "Convert-LNTextures"
+  $script:config = Import-LNJsonConfig
+  $defaultTemplatePath = $script:config.$script:configNode.DefaultTemplatePath
+  $defaultTemplateBlockToReplace = $script:config.$script:configNode.DefaultTemplateBlockToReplace
+  $JsonPath = Get-LNDefaultOrParameterValue -DefaultValue $defaultTemplatePath -ParameterValue $JsonPath
+  $BlockNameToReplace = Get-LNDefaultOrParameterValue -DefaultValue $defaultTemplateBlockToReplace -ParameterValue $BlockNameToReplace
+
+  Start-Logic -JsonPath $JsonPath -BlockNameToReplace $BlockNameToReplace -NewBlockName $NewBlockName
 }
 
 Set-Alias -Name clnt -Value Convert-LNTextures

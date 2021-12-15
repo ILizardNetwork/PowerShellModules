@@ -1,4 +1,9 @@
 {
+  "General": {
+    "Console": {
+      "DateTimeFormat": "dd.MM.yyyy - HH:mm:ss"
+    }
+  },
   "Convert-LNTextures": {
     "_TexturesSourcePath": "This is the path of your local vanilla minecraft resource pack copy which contains all blocks",
     "TexturesSourcePath": "Path of the vanilla texture block files (../textures/blocks)",
@@ -6,6 +11,10 @@
     "DefaultTemplatePath": "Path of the json file",
     "_DefaultTemplateBlockToReplace": "The block which should be replaced from the template. Equivalent to -BlockNameToReplace flag",
     "DefaultTemplateBlockToReplace": "oak_log",
+    "_CreateSubfolder": "Whether a subfolder for the converted json should be created or not",
+    "CreateSubfolder": true,
+    "_SubfolderPrefix": "The prefix of the folder to create if CreateSubfolder is set to true",
+    "SubfolderPrefix": "converted_",
     "_CheckForBlockFaces": "Check for the block faces (top, bottom, front, side) each run. This will check if the given -NewBlockName block has a directional equivalent and replaces it.",
     "CheckForBlockFaces": [
       "top",
