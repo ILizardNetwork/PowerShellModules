@@ -1,6 +1,8 @@
 # Will be used to check for existing blocks with different faces (top and bottom)
 $script:configNode = "Convert-LNTextures"
 $script:config = Import-LNJsonConfig
+$defaultTemplatePath = $script:config.$script:configNode.DefaultTemplatePath
+$defaultTemplateBlockToReplace = $script:config.$script:configNode.DefaultTemplateBlockToReplace
 
 # Get the json object from the given file path
 function Get-JsonObject([string]$Path) {
@@ -31,18 +33,18 @@ function Get-PSObjectKeys($Object) {
 }
 
 # Convert textures and save it into json format
-function Convert-LNTextures([string]$JsonPath = $script:config.$script:configNode.DefaultTemplatePath, [string]$ImageName, [string]$ReplaceImageName) {
+function Convert-LNTextures([string]$JsonPath = $defaultTemplatePath, [string]$BlockNameToReplace = $defaultTemplateBlockToReplace, [string]$NewBlockName) {
   if (!$JsonPath -or !(Test-Path $JsonPath)) {
     "ERR:`tPassed JsonPath `"$JsonPath`" cannot be found!" | Out-Host
     return
   }
 
-  if (!$ImageName -or !$ReplaceImageName ) {
-    "ERR:`tBoth flags, `"ImageName`" and `"ReplaceImageName`" need to be set!" | Out-Host
+  if (!$BlockNameToReplace -or !$NewBlockName ) {
+    "ERR:`tBoth flags, `"BlockNameToReplace`" and `"NewBlockName`" need to be set!" | Out-Host
     return
   }
 
-  $ReplaceImageName = $ReplaceImageName.ToLower()
+  $NewBlockName = $NewBlockName.ToLower()
   $jsonItem = Get-Item $JsonPath
   $jsonDirectoryPath = $jsonItem.Directory.FullName + [System.IO.Path]::DirectorySeparatorChar
   $jsonObject = Get-JsonObject -Path $JsonPath
@@ -53,22 +55,22 @@ function Convert-LNTextures([string]$JsonPath = $script:config.$script:configNod
     $texturePath = $texture.Substring($texture.LastIndexOf(":") + 1)
     $textureDirecory = $texturePath.Substring(0, $texturePath.LastIndexOf("/") + 1)
 
-    if ($textureName -eq $ImageName) {
-      $texturePath = $textureDirecory + $ReplaceImageName
+    if ($textureName -eq $BlockNameToReplace) {
+      $texturePath = $textureDirecory + $NewBlockName
     }
 
     if ($textureName.EndsWith("_top")) {
-      $texturePath = $textureDirecory + (Invoke-BlockCheck -Texture $ReplaceImageName -BlockFace "top")
+      $texturePath = $textureDirecory + (Invoke-BlockCheck -Texture $NewBlockName -BlockFace "top")
     }
 
     if ($textureName.EndsWith("_bottom")) {
-      $texturePath = $textureDirecory + (Invoke-BlockCheck -Texture $ReplaceImageName -BlockFace "bottom")
+      $texturePath = $textureDirecory + (Invoke-BlockCheck -Texture $NewBlockName -BlockFace "bottom")
     }
 
     $jsonObject.textures.$textureKey = $texturePath
   }
 
-  $newFilePath = $jsonDirectoryPath + $jsonItem.BaseName + "_" + $ReplaceImageName + $jsonItem.Extension
+  $newFilePath = $jsonDirectoryPath + $jsonItem.BaseName + "_" + $NewBlockName + $jsonItem.Extension
   $jsonObject | ConvertTo-Json -Compress | Out-File -FilePath $newFilePath -Encoding utf8
   "INF:`tFile has been saved at `"$newFilePath`""
 }

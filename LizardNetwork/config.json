@@ -3,6 +3,8 @@
     "_TexturesSourcePath": "This is the path of your local vanilla minecraft resource pack copy which contains all blocks",
     "TexturesSourcePath": "Path of the vanilla texture block files (../textures/blocks)",
     "_DefaultTemplatePath": "The path of the json file which should be used for the conversion",
-    "DefaultTemplatePath": "Path of the json file"
+    "DefaultTemplatePath": "Path of the json file",
+    "_DefaultTemplateBlockToReplace": "The block which should be replaced from the template. Equivalent to -BlockNameToReplace flag",
+    "DefaultTemplateBlockToReplace": "oak_log"
   }
 }
